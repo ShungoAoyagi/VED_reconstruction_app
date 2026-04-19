@@ -1,0 +1,14 @@
+node_modules/
+.pnpm-store/
+dist/
+.vite/
+*.pyc
+__pycache__/
+*.egg-info/
+venv/
+.env
+ranking_data/
+data/wavefunctions.json
+.DS_Store
+.venv
+.vscode
