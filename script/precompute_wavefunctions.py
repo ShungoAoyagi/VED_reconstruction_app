@@ -13,8 +13,8 @@ For d orbitals we use n=3 (the lowest n that supports ell=2).
 Grid: 21x21x21, origin at [10,10,10], flattened in x,y,z order
 (i.e. [0,0,0], [0,0,1], ..., [0,1,0], ..., [1,0,0], ...).
 
-Output: JSON file containing a dict keyed by "ell_m" with the real part of
-the wavefunction as a flat list of 9261 floats.
+Output: JSON file containing a dict keyed by "ell_m" with "real" and "imag"
+arrays, each a flat list of 9261 floats.
 """
 
 import json
@@ -74,8 +74,16 @@ def main():
     for ell, m in orbitals:
         n = ell + 1
         psi = hydrogen_wavefunction(n, ell, m, x_flat, y_flat, z_flat)
-        result[f"{ell}_{m}"] = psi.real.tolist()
-        print(f"Computed ell={ell}, m={m} (n={n}): max|Re(psi)|={np.max(np.abs(psi.real)):.6f}")
+        result[f"{ell}_{m}"] = {
+            "real": psi.real.tolist(),
+            "imag": psi.imag.tolist(),
+        }
+        print(
+            f"Computed ell={ell}, m={m} (n={n}): "
+            f"max|psi|={np.max(np.abs(psi)):.6f}, "
+            f"max|Re|={np.max(np.abs(psi.real)):.6f}, "
+            f"max|Im|={np.max(np.abs(psi.imag)):.6f}"
+        )
 
     output_dir = os.path.join(os.path.dirname(__file__), "..", "data")
     os.makedirs(output_dir, exist_ok=True)

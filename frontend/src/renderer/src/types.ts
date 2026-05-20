@@ -39,6 +39,8 @@ export type AnswerResponse = {
   now_highest_score: number;
   in_ranking: boolean;
   answer_num: number;
+  is_correct: boolean;
+  elapsed_seconds: number;
 };
 
 export type CorrectAnswerResponse = {

@@ -1,7 +1,6 @@
 """Wave function loading and computation utilities."""
 
 import json
-import os
 from pathlib import Path
 
 import numpy as np
@@ -17,7 +16,7 @@ _wavefunction_cache: dict[str, np.ndarray] = {}
 
 
 def load_wavefunctions() -> dict[str, np.ndarray]:
-    """Load precomputed wavefunctions from JSON file."""
+    """Load precomputed complex wavefunctions from JSON file."""
     global _wavefunction_cache
     if _wavefunction_cache:
         return _wavefunction_cache
@@ -25,14 +24,19 @@ def load_wavefunctions() -> dict[str, np.ndarray]:
     with open(WAVEFUNCTION_FILE) as f:
         data = json.load(f)
 
-    for key, values in data.items():
-        _wavefunction_cache[key] = np.array(values, dtype=np.float64)
+    for key, entry in data.items():
+        if isinstance(entry, dict) and "real" in entry and "imag" in entry:
+            real = np.array(entry["real"], dtype=np.float64)
+            imag = np.array(entry["imag"], dtype=np.float64)
+            _wavefunction_cache[key] = real + 1j * imag
+        else:
+            _wavefunction_cache[key] = np.array(entry, dtype=np.complex128)
 
     return _wavefunction_cache
 
 
 def get_raw_wavefunction(ell: int, m: int) -> np.ndarray:
-    """Get the raw (precomputed) wavefunction for given ell, m."""
+    """Get the raw (precomputed) complex wavefunction for given ell, m."""
     cache = load_wavefunctions()
     key = f"{ell}_{m}"
     if key not in cache:
@@ -40,21 +44,20 @@ def get_raw_wavefunction(ell: int, m: int) -> np.ndarray:
     return cache[key]
 
 
+def get_wavefunction_real_part(ell: int, m: int) -> np.ndarray:
+    """Get only the real part, for display on the frontend."""
+    return get_raw_wavefunction(ell, m).real
+
+
 def apply_coefficients(
     psi: np.ndarray, amplitude: float, phase_degrees: float
 ) -> np.ndarray:
     """
-    Apply amplitude and phase to a wavefunction, return the real part.
-    psi_out = Re(amplitude * exp(i*phase) * psi_complex)
-
-    Since the stored wavefunctions are already the real part of complex
-    wavefunctions, and the complex wavefunction is psi = R(r) * Y_l^m(theta, phi),
-    the full complex value would be needed. For simplicity in this game context,
-    we treat the stored data as the real part and apply:
-    result = amplitude * cos(phase) * psi_real
+    Apply amplitude and phase to a complex wavefunction.
+    result = amplitude * exp(i * phase) * psi
     """
     phase_rad = np.radians(phase_degrees)
-    return amplitude * np.cos(phase_rad) * psi
+    return amplitude * np.exp(1j * phase_rad) * psi
 
 
 def compute_electron_density(wave_func_list: list[tuple[np.ndarray, float, float]]) -> np.ndarray:
@@ -62,11 +65,11 @@ def compute_electron_density(wave_func_list: list[tuple[np.ndarray, float, float
     Compute electron density from a list of (wavefunction, amplitude, phase) tuples.
     density = |sum(c_i * exp(i*phi_i) * psi_i)|^2
     """
-    combined = np.zeros(TOTAL_POINTS, dtype=np.float64)
+    combined = np.zeros(TOTAL_POINTS, dtype=np.complex128)
     for psi, amplitude, phase_degrees in wave_func_list:
         combined += apply_coefficients(psi, amplitude, phase_degrees)
 
-    return combined ** 2
+    return np.power(np.abs(combined), 2)
 
 
 def normalize_density(density: np.ndarray) -> np.ndarray:

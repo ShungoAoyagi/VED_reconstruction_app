@@ -8,6 +8,7 @@ import numpy as np
 from models import Level, WaveFunctionProperty
 from wave_functions import (
     get_raw_wavefunction,
+    get_wavefunction_real_part,
     compute_electron_density,
     TOTAL_POINTS,
 )
@@ -18,9 +19,9 @@ ORBITAL_SET_2_POOL = [(1, 1), (1, -1), (2, 1), (2, -1)]
 LEVEL_CONFIG: dict[Level, dict] = {
     Level.EASY: {
         "limit_seconds": 120,
-        "max_answer_num": 3,
+        "max_answer_num": 4,
         "possible_amplitudes": [1.0, 2.0, 4.0],
-        "possible_phases": [],
+        "possible_phases": [0.0],
         "phase_fixed": True,
     },
     Level.NORMAL: {
@@ -64,11 +65,11 @@ class GameSession:
         self.highest_score = 0
         self.best_density = None
 
-        use_set_1 = random.random() < 0.5
-        if use_set_1:
-            orbitals = list(ORBITAL_SET_1)
-        else:
-            orbitals = random.sample(ORBITAL_SET_2_POOL, 3)
+        # use_set_1 = random.random() < 0.5
+        # if use_set_1:
+        orbitals = list(ORBITAL_SET_1)
+        # else:
+        #     orbitals = random.sample(ORBITAL_SET_2_POOL, 3)
 
         target_amplitudes = [2.0]
         target_phases = [0.0]
@@ -77,12 +78,14 @@ class GameSession:
             amp = random.choice(config["possible_amplitudes"]) if config["possible_amplitudes"] else round(random.uniform(1.0, 4.0), 1)
             target_amplitudes.append(amp)
 
-            if config["phase_fixed"] or level == Level.EASY:
-                phase = random.choice([0.0, 90.0, 180.0, 270.0])
-            elif config["possible_phases"]:
-                phase = random.choice(config["possible_phases"])
-            else:
+            if level == Level.EASY:
                 phase = 0.0
+            elif level == Level.NORMAL:
+                phase = random.choice(config["possible_phases"])
+            elif level == Level.HARD:
+                phase = random.random() * 360.0
+            else:
+                raise ValueError(f"Invalid level: {level}")
             target_phases.append(phase)
 
         self.target_amplitudes = target_amplitudes
@@ -104,7 +107,7 @@ class GameSession:
                 amplitude_min=1,
                 amplitude_max=4,
                 possible_amplitude_list=config["possible_amplitudes"] if i != 0 else [],
-                wave_function=psi.tolist(),
+                wave_function=get_wavefunction_real_part(ell, m).tolist(),
             )
             self.wave_function_properties.append(wf_prop)
 
@@ -119,14 +122,15 @@ class GameSession:
         }
 
     def check_correct(self, amplitudes: list[float], phases: list[float]) -> bool:
-        """Check if the answer exactly matches (for easy/normal modes)."""
+        """Check if the answer matches (for easy/normal modes).
+        Tolerant comparison: amplitude within 0.5, phase within 5 degrees."""
         if self.level == Level.HARD:
             return False
 
         for i in range(len(self.target_amplitudes)):
-            if abs(amplitudes[i] - self.target_amplitudes[i]) > 1e-9:
+            if abs(amplitudes[i] - self.target_amplitudes[i]) > 0.5:
                 return False
-            if abs(phases[i] - self.target_phases[i]) > 1e-9:
+            if abs(phases[i] - self.target_phases[i]) > 5.0:
                 return False
 
         return True

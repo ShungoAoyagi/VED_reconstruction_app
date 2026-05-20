@@ -4,6 +4,7 @@ import { SelectButton } from './SelectButton'
 import { api } from '../api/client'
 import { colors, fontSize, spacing, fontWeight, borderRadius } from '../design_token'
 import type { Level, RankingUser } from '../types'
+import { levelColors, levelLabels } from '../const/level'
 
 const Wrapper = styled.div`
   width: 100%;
@@ -77,12 +78,6 @@ const Title = styled.p`
   color: ${colors.text};
 `
 
-const levelLabels: Record<Level, string> = {
-  easy: 'かんたん',
-  normal: 'ふつう',
-  hard: 'むずかしい'
-}
-
 type Props = {
   initialLevel?: Level
   showLevelTabs?: boolean
@@ -122,6 +117,7 @@ export const InlineRanking = ({ initialLevel = 'easy', showLevelTabs = true }: P
               key={level}
               selected={selectedLevel === level}
               onSelect={() => setSelectedLevel(level)}
+              color={levelColors[level]}
             >
               {levelLabels[level]}
             </SelectButton>

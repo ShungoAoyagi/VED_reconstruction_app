@@ -24,6 +24,7 @@ from wave_functions import (
     compute_inner_product,
     normalize_density,
 )
+import numpy as np
 from scoring import compute_score
 from ranking import load_ranking, add_to_ranking, is_in_ranking
 
@@ -65,7 +66,7 @@ def get_basis_wave_function(request: BasisWaveFunctionRequest):
         raise HTTPException(status_code=400, detail=str(e))
 
     result = apply_coefficients(psi, props.amplitude, props.phase)
-    return {"wave_function": result.tolist()}
+    return {"wave_function": result.real.tolist()}
 
 
 @app.post("/basis-product")
@@ -78,7 +79,7 @@ def get_basis_product(request: BasisProductRequest):
 
     combined1 = apply_coefficients(psi1, request.wave_func1.amplitude, request.wave_func1.phase)
     combined2 = apply_coefficients(psi2, request.wave_func2.amplitude, request.wave_func2.phase)
-    density = (combined1 + combined2) ** 2
+    density = np.abs(combined1 + combined2) ** 2
 
     return {"electron_density": density.tolist()}
 
@@ -137,6 +138,8 @@ def submit_answer(request: AnswerRequest):
         now_highest_score=session.highest_score,
         in_ranking=in_ranking,
         answer_num=session.answer_count,
+        is_correct=is_correct,
+        elapsed_seconds=round(elapsed, 1),
     )
 
 

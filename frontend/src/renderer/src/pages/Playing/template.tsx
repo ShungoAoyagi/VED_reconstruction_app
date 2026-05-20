@@ -1,16 +1,12 @@
-import { useState, useEffect } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
-import { PrimaryButton } from '../components/PrimaryButton'
-import { IconButton } from '../components/IconButton'
-import { SelectButton } from '../components/SelectButton'
-import { Input } from '../components/Input'
-import { VolumeViewer } from '../components/VolumeViewer'
-import { TutorialModal } from '../components/TutorialModal'
-import { useTimer } from '../hooks/useTimer'
-import { api } from '../api/client'
-import { colors, fontSize, spacing, fontWeight, borderRadius } from '../design_token'
-import type { Level, StartGameResponse, WaveFuncProps } from '../types'
+import { PrimaryButton } from '../../components/PrimaryButton'
+import { IconButton } from '../../components/IconButton'
+import { SelectButton } from '../../components/SelectButton'
+import { Input } from '../../components/Input'
+import { VolumeViewer } from '../../components/VolumeViewer'
+import { TutorialModal } from '../../components/TutorialModal'
+import { colors, fontSize, spacing, fontWeight, borderRadius } from '../../design_token'
+import type { Level, WaveFunctionProperty } from '../../types'
 
 const Container = styled.div`
   display: flex;
@@ -197,129 +193,67 @@ type WaveFuncState = {
   phase: number
 }
 
-type LocationState = {
-  level: Level
-  gameData: StartGameResponse
+type CameraState = {
+  azimuth: number
+  polar: number
+  distance: number
 }
 
-export const Playing = () => {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const locationState = location.state as LocationState | undefined
+export type PlayingTemplateProps = {
+  level: Level
+  wfList: WaveFunctionProperty[]
+  targetDensity: number[]
+  maxAnswerNum: number
+  remainingSeconds: number
+  waveFuncStates: WaveFuncState[]
+  answerCount: number
+  highestScore: number
+  lastScore: number | null
+  lastDensity: number[] | null
+  isSubmitting: boolean
+  showConfirm: boolean
+  showTimeUp: boolean
+  isTutorialOpen: boolean
+  cameraState: CameraState
+  onCameraChange: (state: CameraState) => void
+  onAmplitudeChange: (index: number, value: number) => void
+  onPhaseChange: (index: number, value: number) => void
+  onSubmitAnswer: () => void
+  onTimeUpAnswer: () => void
+  onOpenConfirm: () => void
+  onCloseConfirm: () => void
+  onQuit: () => void
+  onOpenTutorial: () => void
+  onCloseTutorial: () => void
+}
 
-  const [waveFuncStates, setWaveFuncStates] = useState<WaveFuncState[]>([])
-  const [showConfirm, setShowConfirm] = useState(false)
-  const [showTimeUp, setShowTimeUp] = useState(false)
-  const [answerCount, setAnswerCount] = useState(0)
-  const [highestScore, setHighestScore] = useState(0)
-  const [lastScore, setLastScore] = useState<number | null>(null)
-  const [lastDensity, setLastDensity] = useState<number[] | null>(null)
-  const [inRanking, setInRanking] = useState(false)
-  const [isTutorialOpen, setIsTutorialOpen] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [cameraState, setCameraState] = useState({
-    azimuth: 0.78,
-    polar: 1.0,
-    distance: 25
-  })
-
-  useEffect(() => {
-    if (!locationState) {
-      navigate('/level-select')
-      return
-    }
-    localStorage.setItem('lastPlayedLevel', locationState.level)
-  }, [locationState, navigate])
-
-  if (!locationState) return null
-
-  const { level, gameData } = locationState
-  const wfList = gameData.wave_function_property_list
-  const targetDensity = gameData.target_electron_density
-  const startTime = gameData.start_time
-  const limitSeconds = gameData.limit_seconds
-  const maxAnswerNum = gameData.max_answer_num
-
-  const { remainingSeconds, isExpired } = useTimer(startTime, limitSeconds)
-
-  if (waveFuncStates.length === 0 && wfList.length > 0) {
-    setWaveFuncStates(
-      wfList.map((wf, i) => ({
-        amplitude: i === 0 ? 2 : (wf.possible_amplitude_list[0] ?? 1),
-        phase: i === 0 ? wf.phase : 0
-      }))
-    )
-  }
-
-  if (isExpired && !showTimeUp) {
-    setShowTimeUp(true)
-  }
-
-  const handleAmplitudeChange = (index: number, value: number) => {
-    setWaveFuncStates((prev) => {
-      const next = [...prev]
-      next[index] = { ...next[index], amplitude: value }
-      return next
-    })
-  }
-
-  const handlePhaseChange = (index: number, value: number) => {
-    setWaveFuncStates((prev) => {
-      const next = [...prev]
-      next[index] = { ...next[index], phase: value }
-      return next
-    })
-  }
-
-  const buildWaveFuncProps = (): WaveFuncProps[] =>
-    wfList.map((wf, i) => ({
-      ell: wf.ell,
-      m: wf.m,
-      amplitude: i === 0 ? 2 : waveFuncStates[i]?.amplitude ?? 1,
-      phase: i === 0 ? wf.phase : waveFuncStates[i]?.phase ?? 0
-    }))
-
-  const handleSubmitAnswer = async () => {
-    if (isSubmitting) return
-    setIsSubmitting(true)
-    try {
-      const props = buildWaveFuncProps()
-      const result = await api.submitAnswer(props)
-
-      setAnswerCount(result.answer_num)
-      setHighestScore(result.now_highest_score)
-      setLastScore(result.now_score)
-      setLastDensity(result.now_electron_density)
-      setInRanking(result.in_ranking)
-
-      if (result.answer_num >= maxAnswerNum) {
-        navigate('/result', {
-          state: {
-            level,
-            score: result.now_highest_score,
-            inRanking: result.in_ranking
-          }
-        })
-      }
-    } catch (e) {
-      console.error('Failed to submit answer:', e)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const handleQuit = () => {
-    setShowConfirm(false)
-    navigate('/level-select')
-  }
-
-  const handleTimeUpAnswer = async () => {
-    await handleSubmitAnswer()
-    navigate('/result', {
-      state: { level, score: highestScore, inRanking }
-    })
-  }
-
+export const PlayingTemplate = ({
+  level,
+  wfList,
+  targetDensity,
+  maxAnswerNum,
+  remainingSeconds,
+  waveFuncStates,
+  answerCount,
+  highestScore,
+  lastScore,
+  lastDensity,
+  isSubmitting,
+  showConfirm,
+  showTimeUp,
+  isTutorialOpen,
+  cameraState,
+  onCameraChange,
+  onAmplitudeChange,
+  onPhaseChange,
+  onSubmitAnswer,
+  onTimeUpAnswer,
+  onOpenConfirm,
+  onCloseConfirm,
+  onQuit,
+  onOpenTutorial,
+  onCloseTutorial
+}: PlayingTemplateProps) => {
   const renderControls = (wfIdx: number, isTimeUp = false) => {
     const wf = wfList[wfIdx]
     if (wfIdx === 0) return null
@@ -330,14 +264,14 @@ export const Playing = () => {
           ψ(ℓ={wf.ell}, m={wf.m})
         </WaveFuncLabel>
         <ControlRow>
-          <ControlLabel>係数:</ControlLabel>
+          <ControlLabel>大きさ:</ControlLabel>
           {wf.possible_amplitude_list.length > 0 ? (
             <SelectGroup>
               {wf.possible_amplitude_list.map((a) => (
                 <SelectButton
                   key={a}
                   selected={waveFuncStates[wfIdx]?.amplitude === a}
-                  onSelect={() => handleAmplitudeChange(wfIdx, a)}
+                  onSelect={() => onAmplitudeChange(wfIdx, a)}
                 >
                   {a}
                 </SelectButton>
@@ -350,20 +284,20 @@ export const Playing = () => {
               max={wf.amplitude_max}
               step={0.1}
               value={waveFuncStates[wfIdx]?.amplitude ?? 1}
-              onChange={(e) => handleAmplitudeChange(wfIdx, Number(e.target.value))}
+              onChange={(e) => onAmplitudeChange(wfIdx, Number(e.target.value))}
             />
           )}
         </ControlRow>
         {(level === 'normal' || level === 'hard') && (
           <ControlRow>
-            <ControlLabel>位相:</ControlLabel>
+            <ControlLabel>角度:</ControlLabel>
             {wf.possible_phase_list.length > 0 ? (
               <SelectGroup>
                 {wf.possible_phase_list.map((p) => (
                   <SelectButton
                     key={p}
                     selected={waveFuncStates[wfIdx]?.phase === p}
-                    onSelect={() => handlePhaseChange(wfIdx, p)}
+                    onSelect={() => onPhaseChange(wfIdx, p)}
                   >
                     {p}°
                   </SelectButton>
@@ -376,7 +310,7 @@ export const Playing = () => {
                 max={360}
                 step={1}
                 value={waveFuncStates[wfIdx]?.phase ?? 0}
-                onChange={(e) => handlePhaseChange(wfIdx, Number(e.target.value))}
+                onChange={(e) => onPhaseChange(wfIdx, Number(e.target.value))}
               />
             )}
           </ControlRow>
@@ -390,21 +324,21 @@ export const Playing = () => {
   return (
     <Container>
       <TopBar>
-        <IconButton icon="back" onClick={() => setShowConfirm(true)} />
+        <IconButton icon="back" onClick={onOpenConfirm} />
         <TimerDisplay $isUrgent={remainingSeconds < 30}>
           {formatTime(remainingSeconds)}
         </TimerDisplay>
-        <IconButton icon="help" onClick={() => setIsTutorialOpen(true)} />
+        <IconButton icon="help" onClick={onOpenTutorial} />
       </TopBar>
 
       <MainContent>
         <ViewersColumn>
           <ViewerSection>
-            <ViewerLabel>目標電子密度</ViewerLabel>
+            <ViewerLabel>目標</ViewerLabel>
             <VolumeViewer
               data={targetDensity}
               cameraState={cameraState}
-              onCameraChange={setCameraState}
+              onCameraChange={onCameraChange}
               width={viewerSize}
               height={viewerSize}
             />
@@ -412,11 +346,11 @@ export const Playing = () => {
 
           {lastDensity && (
             <ViewerSection>
-              <ViewerLabel>直近の回答 (スコア: {lastScore ?? '-'})</ViewerLabel>
+              <ViewerLabel>現在の回答 (スコア: {lastScore ?? '-'})</ViewerLabel>
               <VolumeViewer
                 data={lastDensity}
                 cameraState={cameraState}
-                onCameraChange={setCameraState}
+                onCameraChange={onCameraChange}
                 width={viewerSize}
                 height={viewerSize}
                 color="#10B981"
@@ -432,13 +366,11 @@ export const Playing = () => {
               <ScoreDisplay>{highestScore}</ScoreDisplay>
             </InfoItem>
             <InfoItem>
-              <InfoLabel>直近スコア</InfoLabel>
-              <LastScoreDisplay $visible={lastScore !== null}>
-                {lastScore ?? '-'}
-              </LastScoreDisplay>
+              <InfoLabel>現在のスコア</InfoLabel>
+              <LastScoreDisplay $visible={lastScore !== null}>{lastScore ?? '-'}</LastScoreDisplay>
             </InfoItem>
             <AnswerCount>
-              解答: {answerCount} / {maxAnswerNum}
+              解答回数: {answerCount} / {maxAnswerNum}
             </AnswerCount>
           </InfoBar>
 
@@ -446,7 +378,7 @@ export const Playing = () => {
             i === 0 ? (
               <WaveFuncControl key={`${wf.ell}_${wf.m}`}>
                 <WaveFuncLabel>
-                  ψ(ℓ={wf.ell}, m={wf.m}) [係数固定: 2]
+                  ψ(ℓ={wf.ell}, m={wf.m}) [大きさ固定: 2]
                 </WaveFuncLabel>
               </WaveFuncControl>
             ) : (
@@ -455,7 +387,7 @@ export const Playing = () => {
           )}
 
           <PrimaryButton
-            onClick={handleSubmitAnswer}
+            onClick={onSubmitAnswer}
             disabled={answerCount >= maxAnswerNum || isSubmitting}
           >
             {isSubmitting ? '送信中...' : '解答する'}
@@ -467,17 +399,9 @@ export const Playing = () => {
         <ConfirmOverlay>
           <ConfirmDialog>
             <p>ゲームを中止しますか？</p>
-            <div
-              style={{
-                display: 'flex',
-                gap: spacing.md,
-                justifyContent: 'center'
-              }}
-            >
-              <PrimaryButton onClick={handleQuit}>はい</PrimaryButton>
-              <PrimaryButton onClick={() => setShowConfirm(false)}>
-                いいえ
-              </PrimaryButton>
+            <div style={{ display: 'flex', gap: spacing.md, justifyContent: 'center' }}>
+              <PrimaryButton onClick={onQuit}>はい</PrimaryButton>
+              <PrimaryButton onClick={onCloseConfirm}>いいえ</PrimaryButton>
             </div>
           </ConfirmDialog>
         </ConfirmOverlay>
@@ -487,21 +411,16 @@ export const Playing = () => {
         <TimeUpOverlay>
           <TimeUpDialog>
             <TimeUpTitle>時間切れ！</TimeUpTitle>
-            <p style={{ textAlign: 'center', color: colors.textSecondary }}>
-              最後の解答を入力してください
-            </p>
+            <p style={{ textAlign: 'center', color: colors.textSecondary }}>解答を入力してね</p>
             {wfList.map((_, i) => renderControls(i, true))}
-            <PrimaryButton onClick={handleTimeUpAnswer} disabled={isSubmitting}>
-              {isSubmitting ? '送信中...' : '最終解答する'}
+            <PrimaryButton onClick={onTimeUpAnswer} disabled={isSubmitting}>
+              {isSubmitting ? '送信中...' : '解答する'}
             </PrimaryButton>
           </TimeUpDialog>
         </TimeUpOverlay>
       )}
 
-      <TutorialModal
-        isOpen={isTutorialOpen}
-        onClose={() => setIsTutorialOpen(false)}
-      />
+      <TutorialModal isOpen={isTutorialOpen} onClose={onCloseTutorial} />
     </Container>
   )
 }

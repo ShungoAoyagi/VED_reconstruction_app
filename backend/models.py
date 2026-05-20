@@ -58,6 +58,8 @@ class AnswerResponse(BaseModel):
     now_highest_score: int
     in_ranking: bool
     answer_num: int
+    is_correct: bool
+    elapsed_seconds: float
 
 
 class CorrectAnswerResponse(BaseModel):
