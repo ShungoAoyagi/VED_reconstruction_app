@@ -11,6 +11,11 @@ files:
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
 asarUnpack:
   - resources/**
+extraResources:
+  - from: resources/backend-win
+    to: backend-win
+    filter:
+      - '**/*'
 win:
   executableName: frontend_2
 nsis:

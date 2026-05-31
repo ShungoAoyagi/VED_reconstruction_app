@@ -29,6 +29,7 @@ export const Result = () => {
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [rankingKey, setRankingKey] = useState(0)
+  const [submittedUsername, setSubmittedUsername] = useState('')
 
   const handleSubmitRanking = async () => {
     if (username.length === 0) {
@@ -36,13 +37,14 @@ export const Result = () => {
       return
     }
     if (username.length > 10) {
-      setNameError('10文字以内で入力してください')
+      setNameError('10文字以内で入力してね')
       return
     }
     setNameError('')
     setIsSubmitting(true)
     try {
       await api.addUserToRanking(level, username)
+      setSubmittedUsername(username)
       setIsSubmitted(true)
       setRankingKey((k) => k + 1)
     } catch {
@@ -62,6 +64,7 @@ export const Result = () => {
       isSubmitted={isSubmitted}
       isSubmitting={isSubmitting}
       username={username}
+      submittedUsername={submittedUsername}
       nameError={nameError}
       rankingKey={rankingKey}
       onUsernameChange={setUsername}

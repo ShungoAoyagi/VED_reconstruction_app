@@ -31,8 +31,8 @@ export const Playing = () => {
   const [isTutorialOpen, setIsTutorialOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [cameraState, setCameraState] = useState({
-    azimuth: 0.78,
-    polar: 1.0,
+    azimuth: Math.PI / 4,   // x-y 面内 45°（x と y を均等に見せる）
+    polar: Math.PI / 4,     // z 軸から 45°（z が上、x-y が面内に見える仰角）
     distance: 25
   })
 

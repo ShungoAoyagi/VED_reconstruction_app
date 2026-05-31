@@ -22,6 +22,7 @@ type VolumeViewerProps = {
   height?: number
   showNegative?: boolean
   negativeColor?: string
+  backgroundColor?: string
 }
 
 const IsosurfaceMesh = ({
@@ -101,21 +102,23 @@ const CameraSync = ({
     const controls = controlsRef.current
     const { azimuth, polar, distance } = cameraState
 
+    // z-up 球面座標: polar は z 軸からの角度
     const x = distance * Math.sin(polar) * Math.cos(azimuth)
-    const y = distance * Math.cos(polar)
-    const z = distance * Math.sin(polar) * Math.sin(azimuth)
+    const y = distance * Math.sin(polar) * Math.sin(azimuth)
+    const z = distance * Math.cos(polar)
 
+    camera.up.set(0, 0, 1)
     camera.position.set(x, y, z)
     camera.lookAt(0, 0, 0)
     controls.update()
   }, [cameraState, camera])
 
-  const handleChange = (): React.ReactNode => {
+  const handleChange = (): void => {
     if (!onCameraChange) return
     const pos = camera.position
     const distance = pos.length()
-    const polar = Math.acos(pos.y / distance)
-    const azimuth = Math.atan2(pos.z, pos.x)
+    const polar = Math.acos(Math.max(-1, Math.min(1, pos.z / distance)))
+    const azimuth = Math.atan2(pos.y, pos.x)
     onCameraChange({ azimuth, polar, distance })
   }
 
@@ -149,13 +152,14 @@ export const VolumeViewer = ({
   data,
   threshold: thresholdProp,
   color = '#3B82F6',
-  opacity = 0.7,
+  opacity = 0.95,
   cameraState,
   onCameraChange,
   width = 400,
   height = 400,
   showNegative = false,
-  negativeColor = '#EF4444'
+  negativeColor = '#EF4444',
+  backgroundColor = '#f0f0f0'
 }: VolumeViewerProps) => {
   const threshold = useMemo(
     () => thresholdProp ?? computeBoundaryMaxAbsolute(data, GRID_SIZE),
@@ -166,7 +170,7 @@ export const VolumeViewer = ({
     <div style={{ width, height }}>
       <Canvas
         camera={{ position: [15, 15, 15], fov: 50 }}
-        style={{ background: '#f0f0f0', borderRadius: '0.75rem' }}
+        style={{ background: backgroundColor, borderRadius: '0.75rem' }}
       >
         <ambientLight intensity={0.4} />
         <directionalLight position={[10, 10, 10]} intensity={0.8} />

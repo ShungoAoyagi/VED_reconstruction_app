@@ -16,6 +16,7 @@ export const LevelSelect = () => {
     setIsLoading(true)
     setError('')
     try {
+      console.log('selectedLevel', selectedLevel)
       const response = await api.startGame(selectedLevel)
       navigate('/playing', {
         state: {
@@ -38,6 +39,8 @@ export const LevelSelect = () => {
       error={error}
       handleStart={handleStart}
       isLoading={isLoading}
+      selectedLevel={selectedLevel}
+      setSelectedLevel={setSelectedLevel}
     />
   )
 }

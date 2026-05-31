@@ -1,10 +1,16 @@
 import type { Level } from '../types'
 import { colors } from '../design_token'
 
+export const levelRoughDescriptions: Record<Level, string> = {
+  easy: '大きさだけ当てよう',
+  normal: '大きさと角度が4択で選べる',
+  hard: '激辛！その分点数は高い'
+}
+
 export const levelDescriptions: Record<Level, string> = {
-  easy: '大きさを解答\n制限時間: 2分\n4回まで解答可能',
-  normal: '大きさと角度を選択\n制限時間: 3分\n5回まで解答可能',
-  hard: '大きさと角度を入力\n制限時間: 3分\n5回まで解答可能'
+  easy: '制限時間: 2分\n4回まで答えられるよ',
+  normal: '制限時間: 3分\n5回まで答えられるよ',
+  hard: '制限時間: 3分\n5回まで答えられるよ'
 }
 
 export const levelLabels: Record<Level, string> = {

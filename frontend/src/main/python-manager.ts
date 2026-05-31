@@ -1,6 +1,7 @@
 import { spawn, execSync, type ChildProcess } from 'node:child_process'
 import path from 'node:path'
 import http from 'node:http'
+import { app } from 'electron'
 
 let pythonProcess: ChildProcess | null = null
 let currentPort = 8000
@@ -86,21 +87,28 @@ function waitForServer(port: number, maxRetries = 30): Promise<void> {
 
 export async function startPythonBackend(): Promise<number> {
   currentPort = await findAvailablePort(8000)
-  const pythonCmd = findPython3()
-  const shellPath = getShellPath()
 
-  console.log(`[Backend] Using python: ${pythonCmd}`)
-  console.log(`[Backend] BACKEND_DIR: ${BACKEND_DIR}`)
-
-  pythonProcess = spawn(
-    pythonCmd,
-    ['-m', 'uvicorn', 'main:app', '--host', 'localhost', '--port', String(currentPort)],
-    {
-      cwd: BACKEND_DIR,
-      stdio: ['ignore', 'pipe', 'pipe'],
-      env: { ...process.env, PATH: shellPath || process.env.PATH }
-    }
-  )
+  if (app.isPackaged && process.platform === 'win32') {
+    const exePath = path.join(process.resourcesPath, 'backend-win', 'ved_backend.exe')
+    console.log(`[Backend] Using bundled exe: ${exePath}`)
+    pythonProcess = spawn(exePath, [String(currentPort)], {
+      stdio: ['ignore', 'pipe', 'pipe']
+    })
+  } else {
+    const pythonCmd = findPython3()
+    const shellPath = getShellPath()
+    console.log(`[Backend] Using python: ${pythonCmd}`)
+    console.log(`[Backend] BACKEND_DIR: ${BACKEND_DIR}`)
+    pythonProcess = spawn(
+      pythonCmd,
+      ['-m', 'uvicorn', 'main:app', '--host', 'localhost', '--port', String(currentPort)],
+      {
+        cwd: BACKEND_DIR,
+        stdio: ['ignore', 'pipe', 'pipe'],
+        env: { ...process.env, PATH: shellPath || process.env.PATH }
+      }
+    )
+  }
 
   pythonProcess.on('error', (err) => {
     console.error(`[Backend] Failed to spawn: ${err.message}`)
