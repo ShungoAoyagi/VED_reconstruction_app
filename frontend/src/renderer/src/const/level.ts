@@ -8,15 +8,15 @@ export const levelRoughDescriptions: Record<Level, string> = {
 }
 
 export const levelDescriptions: Record<Level, string> = {
-  easy: '制限時間: 1分\n4回まで答えられるよ',
-  normal: '制限時間: 2分\n5回まで答えられるよ',
-  hard: '制限時間: 2分\n5回まで答えられるよ'
+  easy: '制限時間: 2分半\n4回まで答えられるよ',
+  normal: '制限時間: 3分\n5回まで答えられるよ',
+  hard: '制限時間: 3分半\n5回まで答えられるよ'
 }
 
 export const levelLabels: Record<Level, string> = {
-  easy: 'かんたん',
-  normal: 'ふつう',
-  hard: 'むずかしい'
+  easy: '普通',
+  normal: '難しい',
+  hard: '激ムズ'
 }
 
 export const levelColors: Record<Level, string> = {

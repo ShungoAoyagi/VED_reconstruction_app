@@ -249,8 +249,10 @@ const generateDemoData = (
         // Apply phase rotation e^{iφ}·ψ
         const phi1 = (phi1Deg * Math.PI) / 180
         const phi2 = (phi2Deg * Math.PI) / 180
-        const cos1 = Math.cos(phi1), sin1 = Math.sin(phi1)
-        const cos2 = Math.cos(phi2), sin2 = Math.sin(phi2)
+        const cos1 = Math.cos(phi1),
+          sin1 = Math.sin(phi1)
+        const cos2 = Math.cos(phi2),
+          sin2 = Math.sin(phi2)
 
         const re = c1 * (cos1 * psi1Re - sin1 * psi1Im) + c2 * (cos2 * psi2Re - sin2 * psi2Im)
         const im = c1 * (sin1 * psi1Re + cos1 * psi1Im) + c2 * (sin2 * psi2Re + cos2 * psi2Im)
@@ -297,16 +299,16 @@ export const TutorialModal = ({ isOpen, onClose }: TutorialModalProps) => {
         <SectionTitle>難易度</SectionTitle>
         <LevelList>
           <LevelRow $color="#69C361">
-            <LevelBadge $color="#69C361">かんたん</LevelBadge>
-            係数を3択から選択。解答4回・制限1分。
+            <LevelBadge $color="#69C361">普通</LevelBadge>
+            係数を3択から選択。解答4回・制限2分半。
           </LevelRow>
           <LevelRow $color="#F3AE36">
-            <LevelBadge $color="#F3AE36">ふつう</LevelBadge>
-            係数4択・角度を90°刻みで選択。解答5回・制限2分。
+            <LevelBadge $color="#F3AE36">難しい</LevelBadge>
+            係数4択・角度を90°刻みで選択。解答5回・制限3分。
           </LevelRow>
           <LevelRow $color="#EB5757">
-            <LevelBadge $color="#EB5757">むずかしい</LevelBadge>
-            係数・角度ともに自由入力。解答5回・制限2分。
+            <LevelBadge $color="#EB5757">激ムズ</LevelBadge>
+            係数・角度ともに自由入力。解答5回・制限3分半。
           </LevelRow>
         </LevelList>
       </Section>

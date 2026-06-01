@@ -13,7 +13,7 @@ const C = {
   text: '#E6EDF3',
   textSub: '#8B949E',
   accent: '#6366F1',
-  accentBlue: '#3B82F6',
+  accentBlue: '#3B82F6'
 } as const
 
 const shimmer = keyframes`
@@ -110,6 +110,12 @@ const LearnButton = styled.button`
   }
 `
 
+const CenterButtonWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+`
+
 export type StartTemplateProps = {
   lastLevel: Level
   isTutorialOpen: boolean
@@ -130,13 +136,15 @@ export const StartTemplate = ({
   return (
     <Container>
       <TopRightButtons>
-        <LearnButton onClick={() => navigate('/physics')}>学ぶ</LearnButton>
         <HelpButton onClick={onOpenTutorial}>?</HelpButton>
       </TopRightButtons>
       <Title>電子を観察してみよう</Title>
       <Subtitle>電子のミクロな構造を当てよう</Subtitle>
       <Divider />
-      <PrimaryButton onClick={onStart}>スタート</PrimaryButton>
+      <CenterButtonWrapper>
+        <PrimaryButton onClick={onStart}>ゲームスタート</PrimaryButton>
+        <LearnButton onClick={() => navigate('/physics')}>原理を知る</LearnButton>
+      </CenterButtonWrapper>
       <InlineRanking initialLevel={lastLevel} showLevelTabs />
       <TutorialModal isOpen={isTutorialOpen} onClose={onCloseTutorial} />
     </Container>

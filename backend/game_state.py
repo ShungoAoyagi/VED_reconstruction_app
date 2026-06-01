@@ -18,21 +18,21 @@ ORBITAL_SET_2_POOL = [(1, 1), (1, -1), (2, 1), (2, -1)]
 
 LEVEL_CONFIG: dict[Level, dict] = {
     Level.EASY: {
-        "limit_seconds": 60,
+        "limit_seconds": 150,
         "max_answer_num": 4,
         "possible_amplitudes": [1.0, 2.0, 4.0],
         "possible_phases": [0.0],
         "phase_fixed": True,
     },
     Level.NORMAL: {
-        "limit_seconds": 120,
+        "limit_seconds": 180,
         "max_answer_num": 5,
         "possible_amplitudes": [1.0, 2.0, 4.0],
         "possible_phases": [0.0, 90.0, 180.0, 270.0],
         "phase_fixed": False,
     },
     Level.HARD: {
-        "limit_seconds": 120,
+        "limit_seconds": 210,
         "max_answer_num": 5,
         "possible_amplitudes": [],
         "possible_phases": [],
