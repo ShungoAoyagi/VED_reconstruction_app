@@ -18,21 +18,21 @@ ORBITAL_SET_2_POOL = [(1, 1), (1, -1), (2, 1), (2, -1)]
 
 LEVEL_CONFIG: dict[Level, dict] = {
     Level.EASY: {
-        "limit_seconds": 120,
+        "limit_seconds": 60,
         "max_answer_num": 4,
         "possible_amplitudes": [1.0, 2.0, 4.0],
         "possible_phases": [0.0],
         "phase_fixed": True,
     },
     Level.NORMAL: {
-        "limit_seconds": 180,
+        "limit_seconds": 120,
         "max_answer_num": 5,
         "possible_amplitudes": [1.0, 2.0, 4.0],
         "possible_phases": [0.0, 90.0, 180.0, 270.0],
         "phase_fixed": False,
     },
     Level.HARD: {
-        "limit_seconds": 180,
+        "limit_seconds": 120,
         "max_answer_num": 5,
         "possible_amplitudes": [],
         "possible_phases": [],
@@ -79,7 +79,7 @@ class GameSession:
             target_amplitudes.append(amp)
 
             if level == Level.EASY:
-                phase = 0.0
+                phase = 90.0 if orbitals[i] == (2, 1) else 0.0
             elif level == Level.NORMAL:
                 phase = random.choice(config["possible_phases"])
             elif level == Level.HARD:
@@ -102,7 +102,11 @@ class GameSession:
                 ell=ell,
                 m=m,
                 phase=target_phases[i] if i == 0 else 0.0,
-                possible_phase_list=config["possible_phases"] if i != 0 else [],
+                possible_phase_list=(
+                    [90.0] if (i != 0 and level == Level.EASY and orbitals[i] == (2, 1))
+                    else config["possible_phases"] if i != 0
+                    else []
+                ),
                 amplitude=target_amplitudes[i] if i == 0 else config["possible_amplitudes"][0] if config["possible_amplitudes"] else 1.0,
                 amplitude_min=1,
                 amplitude_max=4,

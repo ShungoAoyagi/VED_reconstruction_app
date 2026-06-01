@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import styled, { keyframes, css } from 'styled-components'
 import { IconButton } from '../../components/IconButton'
 import { VolumeViewer } from '../../components/VolumeViewer'
@@ -79,9 +79,10 @@ const TimerDisplay = styled.div<{ $isUrgent: boolean }>`
 // ---- Row 1: viewers + score ----
 const Row1 = styled.div`
   display: flex;
+  flex: 1;
   gap: ${spacing.md};
   align-items: stretch;
-  flex-shrink: 0;
+  min-height: 0;
 `
 
 const ViewerSection = styled.div`
@@ -531,9 +532,23 @@ export const PlayingTemplate = ({
   )
 
   const row1ViewerSize = 300
-  // 1080p全画面想定: Row2高さ≈574px、非ビューア要素≈135px → 使用可能≈440px
-  // カード幅はビューアより十分大きいので高さが制約
-  const waveViewerSize = wfList.length <= 1 ? 420 : wfList.length === 2 ? 400 : 380
+
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth)
+  useEffect(() => {
+    const onResize = () => setWindowWidth(window.innerWidth)
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
+  const waveViewerSize = useMemo(() => {
+    const n = wfList.length
+    // Container: padding lr = spacing.lg (24px) × 2 = 48px
+    // Row2: gap = spacing.md (16px) × (n-1)
+    // WaveFuncCard: padding lr = spacing.md (16px) × 2 × n
+    const maxByWidth = Math.floor((windowWidth - 48 - 16 * (n - 1) - 32 * n) / n)
+    const maxByHeight = n <= 1 ? 420 : n === 2 ? 400 : 380
+    return Math.min(maxByWidth, maxByHeight)
+  }, [windowWidth, wfList.length])
 
   const renderTimeUpCard = (wfIdx: number) => {
     const wf = wfList[wfIdx]
@@ -564,7 +579,7 @@ export const PlayingTemplate = ({
           ψ(ℓ={wf.ell}, m={wf.m})
         </WaveFuncLabel>
         {wfIdx === 0 ? (
-          <FixedBadge>大きさ固定: 2</FixedBadge>
+          <FixedBadge>大きさ: 2</FixedBadge>
         ) : (
           <>
             <ControlRow>
@@ -609,7 +624,7 @@ export const PlayingTemplate = ({
     <Container>
       <TopBar>
         <DarkIconButton icon="back" onClick={onOpenConfirm} />
-        <TimerDisplay $isUrgent={remainingSeconds < 30}>
+        <TimerDisplay $isUrgent={remainingSeconds < 10}>
           {formatTime(remainingSeconds)}
         </TimerDisplay>
         <DarkIconButton icon="help" onClick={onOpenTutorial} />
@@ -717,7 +732,7 @@ export const PlayingTemplate = ({
               )}
 
               {i === 0 ? (
-                <FixedBadge>大きさ固定: 2</FixedBadge>
+                <FixedBadge>大きさ: 2</FixedBadge>
               ) : (
                 <>
                   <ControlRow>

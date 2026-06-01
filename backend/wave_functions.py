@@ -1,6 +1,7 @@
 """Wave function loading and computation utilities."""
 
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -9,7 +10,12 @@ GRID_SIZE = 21
 GRID_CENTER = 10
 TOTAL_POINTS = GRID_SIZE ** 3
 
-DATA_DIR = Path(__file__).parent.parent / "data"
+# PyInstaller onefile bundles extract to sys._MEIPASS; otherwise use project root
+if getattr(sys, 'frozen', False):
+    DATA_DIR = Path(sys._MEIPASS) / "data"  # type: ignore[attr-defined]
+else:
+    DATA_DIR = Path(__file__).parent.parent / "data"
+
 WAVEFUNCTION_FILE = DATA_DIR / "wavefunctions.json"
 
 _wavefunction_cache: dict[str, np.ndarray] = {}
@@ -45,8 +51,15 @@ def get_raw_wavefunction(ell: int, m: int) -> np.ndarray:
 
 
 def get_wavefunction_real_part(ell: int, m: int) -> np.ndarray:
-    """Get only the real part, for display on the frontend."""
-    return get_raw_wavefunction(ell, m).real
+    """Get the display wavefunction for the frontend.
+
+    For l=2, m=-2: return the imaginary part (proportional to xy/r^2 = d_xy shape).
+    For all others: return the real part.
+    """
+    psi = get_raw_wavefunction(ell, m)
+    if ell == 2 and m == -2:
+        return psi.imag
+    return psi.real
 
 
 def apply_coefficients(

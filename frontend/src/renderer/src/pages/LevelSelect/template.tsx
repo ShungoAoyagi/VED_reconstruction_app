@@ -23,10 +23,10 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  /*justify-content: center;*/
   min-height: 100vh;
   background: ${C.bg};
-  padding: 40px;
+  padding: 80px 40px;
   gap: 32px;
 `
 

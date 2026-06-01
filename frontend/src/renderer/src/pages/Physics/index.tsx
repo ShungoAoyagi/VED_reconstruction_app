@@ -2,16 +2,12 @@ import React, { useRef, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled, { keyframes, css } from 'styled-components'
 import { fontWeight } from '../../design_token'
-import { PeriodicTable } from '../../components/PeriodicTable'
-
-const C = {
-  bg: '#0D1117',
-  card: '#1C2333',
-  border: 'rgba(99, 102, 241, 0.22)',
-  text: '#E6EDF3',
-  textSub: '#BBD4DE',
-  accent: '#6366F1'
-} as const
+import { C } from './styles'
+import { AtomsSection } from './sections/AtomsSection'
+import { ElectronsSection } from './sections/ElectronsSection'
+import { WaveSection } from './sections/WaveSection'
+import { ExperimentSection } from './sections/ExperimentSection'
+import { ResearchSection } from './sections/ResearchSection'
 
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(12px); }
@@ -22,32 +18,6 @@ const PageWrapper = styled.div`
   min-height: 100vh;
   background: ${C.bg};
   animation: ${fadeIn} 0.3s ease;
-`
-
-const BackButtonWrapper = styled.div`
-  padding: auto;
-`
-
-const BackButton = styled.button`
-  position: sticky;
-  top: 40px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: transparent;
-  color: ${C.textSub};
-  font-size: 0.9rem;
-  border: 1px solid rgba(99, 102, 241, 0.28);
-  border-radius: 999px;
-  padding: 6px 16px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-
-  &:hover {
-    background: rgba(99, 102, 241, 0.12);
-    border-color: rgba(99, 102, 241, 0.6);
-    color: #818cf8;
-  }
 `
 
 const Layout = styled.div`
@@ -67,11 +37,30 @@ const SideMenu = styled.div`
   gap: 12px;
 `
 
+const BackButton = styled.button`
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  color: ${C.textSub};
+  font-size: 0.9rem;
+  border: 1px solid rgba(99, 102, 241, 0.28);
+  border-radius: 999px;
+  padding: 6px 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: rgba(99, 102, 241, 0.12);
+    border-color: rgba(99, 102, 241, 0.6);
+    color: #818cf8;
+  }
+`
+
 const Toc = styled.nav`
   width: 200px;
   flex-shrink: 0;
-  position: sticky;
-  top: 40px;
 `
 
 const TocTitle = styled.p`
@@ -131,38 +120,9 @@ const Section = styled.section`
   scroll-margin-top: 40px;
 `
 
-const SectionTitle = styled.h2`
-  color: ${C.text};
-  font-size: 1.1rem;
-  font-weight: ${fontWeight.semibold};
-  margin-bottom: 16px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid rgba(99, 102, 241, 0.2);
-`
-
-const ExplanationText = styled.p`
-  color: ${C.textSub};
-  font-size: 1rem;
-  line-height: 1.6;
-
-  b {
-    font-weight: ${fontWeight.bold};
-  }
-`
-
-const PlaceholderText = styled.p`
-  color: ${C.textSub};
-  font-size: 1rem;
-  line-height: 1.8;
-  text-align: center;
-  padding: 48px 0;
-  border: 1px dashed rgba(99, 102, 241, 0.2);
-  border-radius: 12px;
-`
-
 type TocId = 'atoms' | 'electrons' | 'wave' | 'experiment' | 'research'
 
-export const Physics = () => {
+export const Physics = (): React.ReactElement => {
   const navigate = useNavigate()
   const atomsRef = useRef<HTMLElement>(null)
   const electronsRef = useRef<HTMLElement>(null)
@@ -172,13 +132,6 @@ export const Physics = () => {
   const [activeId, setActiveId] = useState<TocId>('atoms')
 
   useEffect(() => {
-    const refMap: Record<TocId, React.RefObject<HTMLElement | null>> = {
-      atoms: atomsRef,
-      electrons: electronsRef,
-      wave: waveRef,
-      experiment: experimentRef,
-      research: researchRef
-    }
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
@@ -187,86 +140,63 @@ export const Physics = () => {
       },
       { rootMargin: '-30% 0px -60% 0px' }
     )
-    for (const ref of Object.values(refMap)) {
+    const allRefs = [atomsRef, electronsRef, waveRef, experimentRef, researchRef]
+    for (const ref of allRefs) {
       if (ref.current) observer.observe(ref.current)
     }
     return () => observer.disconnect()
-  }, [])
+  }, [atomsRef, electronsRef, waveRef, experimentRef, researchRef])
 
-  const scrollTo = (id: TocId) => {
-    const refMap: Record<TocId, React.RefObject<HTMLElement | null>> = {
+  const scrollTo = (id: TocId): void => {
+    const map: Record<TocId, React.RefObject<HTMLElement | null>> = {
       atoms: atomsRef,
       electrons: electronsRef,
       wave: waveRef,
       experiment: experimentRef,
       research: researchRef
     }
-    refMap[id].current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    map[id].current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   return (
     <PageWrapper>
       <Layout>
         <SideMenu>
-          <BackButtonWrapper>
-            <BackButton onClick={() => navigate('/')}>← 戻る</BackButton>
-          </BackButtonWrapper>
+          <BackButton onClick={() => navigate('/')}>← 戻る</BackButton>
           <Toc>
             <TocTitle>目次</TocTitle>
-            <TocItem $active={activeId === 'atoms'} onClick={() => scrollTo('atoms')}>
-              原子と電子
-            </TocItem>
-            <TocItem $active={activeId === 'electrons'} onClick={() => scrollTo('electrons')}>
-              物質の中の電子
-            </TocItem>
-            <TocItem $active={activeId === 'wave'} onClick={() => scrollTo('wave')}>
-              波動関数と電子密度
-            </TocItem>
-            <TocItem $active={activeId === 'experiment'} onClick={() => scrollTo('experiment')}>
-              実験で分かること
-            </TocItem>
-            <TocItem $active={activeId === 'research'} onClick={() => scrollTo('research')}>
-              本研究室の成果
-            </TocItem>
+            {(
+              [
+                { id: 'atoms', label: '原子と電子' },
+                { id: 'electrons', label: '物質の中の電子' },
+                { id: 'wave', label: '波動関数と電子密度' },
+                { id: 'experiment', label: '実験で分かること' },
+                { id: 'research', label: '本研究室の成果' }
+              ] as { id: TocId; label: string }[]
+            ).map(({ id, label }) => (
+              <TocItem key={id} $active={activeId === id} onClick={() => scrollTo(id)}>
+                {label}
+              </TocItem>
+            ))}
           </Toc>
         </SideMenu>
+
         <Content>
           <PageTitle>物理的な背景</PageTitle>
-
           <Section id="atoms" ref={atomsRef}>
-            <SectionTitle>原子と電子</SectionTitle>
-            <ExplanationText>
-              物質の構成要素として知られる「原子」は、原子核とその周りを回る電子によって構成されます。
-              それぞれの原子に含まれる電子の数は元素周期表の番号と一致します。
-            </ExplanationText>
-            <PeriodicTable />
-            <ExplanationText>
-              空間中に原子が1つ置かれた場合、電子は空間的に広がりを持ったような状態を取ります。
-              この広がりを持ったような電子の状態のことを<b>波動関数</b>と呼びます。
-              広がりが球状になっている状態のことをs軌道、ある軸にそって波動関数にプラスの部分とマイナスの部分がある状態のことをp軌道、もう一段階複雑にしたものをd軌道と呼びます。
-              p軌道やd軌道は何種類か存在しますが、原子の周囲に何もない場合は全状態を等確率で取りえます。
-            </ExplanationText>
+            <AtomsSection />
           </Section>
           <Section id="electrons" ref={electronsRef}>
-            <SectionTitle>物質の中の電子</SectionTitle>
-            <ExplanationText>
-              一方で、物質の中の電子では周囲の原子や電子との相互作用によって状況が変化します。
-            </ExplanationText>
+            <ElectronsSection />
           </Section>
-
           <Section id="wave" ref={waveRef}>
-            <SectionTitle>波動関数と電子密度</SectionTitle>
-            <PlaceholderText>ここに説明が入ります</PlaceholderText>
+            <WaveSection />
           </Section>
-
           <Section id="experiment" ref={experimentRef}>
-            <SectionTitle>実験で分かること</SectionTitle>
-            <PlaceholderText>ここに説明が入ります</PlaceholderText>
+            <ExperimentSection />
           </Section>
-
           <Section id="research" ref={researchRef}>
-            <SectionTitle>本研究室の成果</SectionTitle>
-            <PlaceholderText>ここに説明が入ります</PlaceholderText>
+            <ResearchSection />
           </Section>
         </Content>
       </Layout>

@@ -1,5 +1,5 @@
-appId: com.electron.app
-productName: frontend_2
+appId: com.ved.reconstruction
+productName: VED Reconstruction
 directories:
   buildResources: build
 files:
@@ -17,7 +17,7 @@ extraResources:
     filter:
       - '**/*'
 win:
-  executableName: frontend_2
+  executableName: VED_Reconstruction
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}

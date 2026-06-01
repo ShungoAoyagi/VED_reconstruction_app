@@ -10,24 +10,31 @@ const MAX_PORT_ATTEMPTS = 10
 const BACKEND_DIR = path.join(__dirname, '../../../backend')
 
 function findPython3(): string {
-  const candidates = [
-    'python3',
-    '/usr/local/bin/python3',
-    '/opt/homebrew/bin/python3',
-    '/usr/bin/python3'
-  ]
+  const venvPython =
+    process.platform === 'win32'
+      ? path.join(BACKEND_DIR, '.venv', 'Scripts', 'python.exe')
+      : path.join(BACKEND_DIR, '.venv', 'bin', 'python3')
+
+  const candidates =
+    process.platform === 'win32'
+      ? [venvPython, 'python', 'python3']
+      : [venvPython, 'python3', '/usr/local/bin/python3', '/opt/homebrew/bin/python3', '/usr/bin/python3']
+
   for (const cmd of candidates) {
     try {
-      execSync(`${cmd} --version`, { stdio: 'ignore' })
+      execSync(`"${cmd}" --version`, { stdio: 'ignore' })
       return cmd
     } catch {
       // continue
     }
   }
-  return 'python3'
+  return process.platform === 'win32' ? 'python' : 'python3'
 }
 
 function getShellPath(): string {
+  if (process.platform === 'win32') {
+    return process.env.PATH || ''
+  }
   try {
     return execSync('/bin/bash -ilc "echo $PATH"', { encoding: 'utf-8' }).trim()
   } catch {

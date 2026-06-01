@@ -64,6 +64,7 @@ const LevelSelectDemo = () => {
 }
 
 export const LevelSelection: Story = {
+  args: { selected: false, onSelect: () => {} },
   render: () => <LevelSelectDemo />
 }
 
@@ -86,5 +87,6 @@ const AmplitudeSelectDemo = () => {
 }
 
 export const AmplitudeSelection: Story = {
+  args: { selected: false, onSelect: () => {} },
   render: () => <AmplitudeSelectDemo />
 }

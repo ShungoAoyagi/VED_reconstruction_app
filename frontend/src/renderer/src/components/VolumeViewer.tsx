@@ -169,7 +169,7 @@ export const VolumeViewer = ({
   return (
     <div style={{ width, height }}>
       <Canvas
-        camera={{ position: [15, 15, 15], fov: 50 }}
+        camera={{ position: [1000, 1000, 1000], fov: 50 }}
         style={{ background: backgroundColor, borderRadius: '0.75rem' }}
       >
         <ambientLight intensity={0.4} />

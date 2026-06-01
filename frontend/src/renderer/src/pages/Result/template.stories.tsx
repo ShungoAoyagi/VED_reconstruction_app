@@ -19,6 +19,7 @@ const baseArgs = {
   isSubmitted: false,
   isSubmitting: false,
   username: '',
+  submittedUsername: '',
   nameError: '',
   rankingKey: 0,
   onUsernameChange: () => {},

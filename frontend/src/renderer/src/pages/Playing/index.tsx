@@ -31,9 +31,9 @@ export const Playing = () => {
   const [isTutorialOpen, setIsTutorialOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [cameraState, setCameraState] = useState({
-    azimuth: Math.PI / 4,   // x-y 面内 45°（x と y を均等に見せる）
-    polar: Math.PI / 4,     // z 軸から 45°（z が上、x-y が面内に見える仰角）
-    distance: 25
+    azimuth: Math.PI / 4, // x-y 面内 45°（x と y を均等に見せる）
+    polar: Math.PI / 4, // z 軸から 45°（z が上、x-y が面内に見える仰角）
+    distance: 50
   })
 
   useEffect(() => {
@@ -59,7 +59,7 @@ export const Playing = () => {
     setWaveFuncStates(
       wfList.map((wf, i) => ({
         amplitude: i === 0 ? 2 : (wf.possible_amplitude_list[0] ?? 1),
-        phase: i === 0 ? wf.phase : 0
+        phase: i === 0 ? wf.phase : (wf.possible_phase_list[0] ?? 0)
       }))
     )
   }
@@ -131,7 +131,13 @@ export const Playing = () => {
   const handleTimeUpAnswer = async () => {
     await handleSubmitAnswer()
     navigate('/result', {
-      state: { level, score: highestScore, inRanking, isCorrect: false, elapsedSeconds: limitSeconds }
+      state: {
+        level,
+        score: highestScore,
+        inRanking,
+        isCorrect: false,
+        elapsedSeconds: limitSeconds
+      }
     })
   }
 

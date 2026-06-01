@@ -17,6 +17,8 @@ export const Default: Story = {
     setIsTutorialOpen: () => {},
     error: '',
     handleStart: () => {},
-    isLoading: false
+    isLoading: false,
+    selectedLevel: null,
+    setSelectedLevel: () => {}
   }
 }

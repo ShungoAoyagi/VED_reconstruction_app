@@ -1,11 +1,16 @@
 """Ranking persistence using TSV files (one per level)."""
 
 import os
+import sys
 from pathlib import Path
 
 from models import Level, RankingUser
 
-RANKING_DIR = Path(__file__).parent / "ranking_data"
+if getattr(sys, 'frozen', False):
+    # Packaged exe: persist to AppData\Roaming so data survives across runs
+    RANKING_DIR = Path(os.environ.get('APPDATA', Path.home())) / "VED Reconstruction" / "ranking_data"
+else:
+    RANKING_DIR = Path(__file__).parent / "ranking_data"
 MAX_RANKING_SIZE = 10
 DISPLAY_SIZE = 5
 

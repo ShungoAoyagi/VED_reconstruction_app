@@ -21,7 +21,7 @@ import json
 import os
 
 import numpy as np
-from scipy.special import sph_harm, factorial
+from scipy.special import factorial, sph_harm_y
 
 GRID_SIZE = 21
 CENTER = 10
@@ -38,10 +38,17 @@ def radial_wavefunction(n: int, ell: int, r: np.ndarray) -> np.ndarray:
         * factorial(n - ell - 1, exact=True)
         / (2.0 * n * factorial(n + ell, exact=True))
     )
-    return normalization * np.exp(-rho / 2.0) * rho**ell * assoc_laguerre(rho, n - ell - 1, 2 * ell + 1)
+    return (
+        normalization
+        * np.exp(-rho / 2.0)
+        * rho**ell
+        * assoc_laguerre(rho, n - ell - 1, 2 * ell + 1)
+    )
 
 
-def hydrogen_wavefunction(n: int, ell: int, m: int, x: np.ndarray, y: np.ndarray, z: np.ndarray) -> np.ndarray:
+def hydrogen_wavefunction(
+    n: int, ell: int, m: int, x: np.ndarray, y: np.ndarray, z: np.ndarray
+) -> np.ndarray:
     """Compute the complex hydrogen wavefunction psi_{n,l,m}(x,y,z)."""
     r = np.sqrt(x**2 + y**2 + z**2)
     r = np.maximum(r, 1e-10)
@@ -49,9 +56,10 @@ def hydrogen_wavefunction(n: int, ell: int, m: int, x: np.ndarray, y: np.ndarray
     phi = np.arctan2(y, x)
 
     R = radial_wavefunction(n, ell, r)
-    Y = sph_harm(m, ell, phi, theta)
+    Y = sph_harm_y(ell, m, theta, phi)
 
     return R * Y
+
 
 
 def main():
