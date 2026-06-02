@@ -3,17 +3,13 @@ import { useNavigate } from 'react-router-dom'
 import { PrimaryButton } from '../../components/PrimaryButton'
 import { TutorialModal } from '../../components/TutorialModal'
 import { InlineRanking } from '../../components/InlineRanking'
+import { LevelSelector } from '../../components/LevelSelector'
 import { fontWeight } from '../../design_token'
 import type { Level } from '../../types'
 
 const C = {
   bg: '#0D1117',
-  card: '#1C2333',
-  border: 'rgba(99, 102, 241, 0.22)',
-  text: '#E6EDF3',
-  textSub: '#8B949E',
-  accent: '#6366F1',
-  accentBlue: '#3B82F6'
+  textSub: '#8B949E'
 } as const
 
 const shimmer = keyframes`
@@ -28,7 +24,7 @@ const Container = styled.div`
   justify-content: flex-start;
   min-height: 100vh;
   background: ${C.bg};
-  padding: 80px 40px 40px;
+  padding: 60px 40px 40px;
   gap: 24px;
 `
 
@@ -42,18 +38,16 @@ const TopRightButtons = styled.div`
 `
 
 const HelpButton = styled.button`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
+  padding: 6px 16px;
   background: transparent;
   color: ${C.textSub};
-  font-size: 1.25rem;
+  font-size: 0.9rem;
+  font-weight: ${fontWeight.semibold};
   border: 1px solid rgba(99, 102, 241, 0.28);
   border-radius: 999px;
   cursor: pointer;
   transition: all 0.15s ease;
+  letter-spacing: 0.03em;
 
   &:hover {
     background: rgba(99, 102, 241, 0.12);
@@ -74,17 +68,17 @@ const Title = styled.h1`
   animation: ${shimmer} 4s linear infinite;
 `
 
-const Subtitle = styled.p`
-  font-size: 1.1rem;
-  color: ${C.textSub};
-  letter-spacing: 0.04em;
-`
-
 const Divider = styled.div`
   width: 60px;
   height: 2px;
   background: linear-gradient(90deg, #6366f1, #3b82f6);
   border-radius: 1px;
+`
+
+const ButtonRow = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 16px;
 `
 
 const LearnButton = styled.button`
@@ -110,14 +104,16 @@ const LearnButton = styled.button`
   }
 `
 
-const CenterButtonWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  gap: 16px;
+const ErrorText = styled.p`
+  font-size: 0.875rem;
+  color: #f85149;
 `
 
 export type StartTemplateProps = {
-  lastLevel: Level
+  selectedLevel: Level
+  onSelectLevel: (level: Level) => void
+  isLoading: boolean
+  error: string
   isTutorialOpen: boolean
   onOpenTutorial: () => void
   onCloseTutorial: () => void
@@ -125,7 +121,10 @@ export type StartTemplateProps = {
 }
 
 export const StartTemplate = ({
-  lastLevel,
+  selectedLevel,
+  onSelectLevel,
+  isLoading,
+  error,
   isTutorialOpen,
   onOpenTutorial,
   onCloseTutorial,
@@ -136,16 +135,24 @@ export const StartTemplate = ({
   return (
     <Container>
       <TopRightButtons>
-        <HelpButton onClick={onOpenTutorial}>?</HelpButton>
+        <HelpButton onClick={onOpenTutorial}>遊び方</HelpButton>
       </TopRightButtons>
+
       <Title>電子を観察してみよう</Title>
-      <Subtitle>電子のミクロな構造を当てよう</Subtitle>
       <Divider />
-      <CenterButtonWrapper>
-        <PrimaryButton onClick={onStart}>ゲームスタート</PrimaryButton>
+
+      <ButtonRow>
+        <PrimaryButton onClick={onStart} disabled={isLoading}>
+          {isLoading ? '読み込み中...' : 'ゲームスタート'}
+        </PrimaryButton>
         <LearnButton onClick={() => navigate('/physics')}>原理を知る</LearnButton>
-      </CenterButtonWrapper>
-      <InlineRanking initialLevel={lastLevel} showLevelTabs />
+      </ButtonRow>
+      {error && <ErrorText>{error}</ErrorText>}
+
+      <LevelSelector selectedLevel={selectedLevel} onSelectLevel={onSelectLevel} />
+
+      <InlineRanking initialLevel={selectedLevel} showLevelTabs={false} />
+
       <TutorialModal isOpen={isTutorialOpen} onClose={onCloseTutorial} />
     </Container>
   )

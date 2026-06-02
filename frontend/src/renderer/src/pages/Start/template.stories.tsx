@@ -12,7 +12,49 @@ type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   args: {
-    lastLevel: 'easy',
+    selectedLevel: 'easy',
+    onSelectLevel: () => {},
+    isLoading: false,
+    error: '',
+    isTutorialOpen: false,
+    onOpenTutorial: () => {},
+    onCloseTutorial: () => {},
+    onStart: () => {}
+  }
+}
+
+export const NormalSelected: Story = {
+  args: {
+    selectedLevel: 'normal',
+    onSelectLevel: () => {},
+    isLoading: false,
+    error: '',
+    isTutorialOpen: false,
+    onOpenTutorial: () => {},
+    onCloseTutorial: () => {},
+    onStart: () => {}
+  }
+}
+
+export const Loading: Story = {
+  args: {
+    selectedLevel: 'hard',
+    onSelectLevel: () => {},
+    isLoading: true,
+    error: '',
+    isTutorialOpen: false,
+    onOpenTutorial: () => {},
+    onCloseTutorial: () => {},
+    onStart: () => {}
+  }
+}
+
+export const WithError: Story = {
+  args: {
+    selectedLevel: 'easy',
+    onSelectLevel: () => {},
+    isLoading: false,
+    error: 'サーバーとの通信に失敗しました。再度お試しください。',
     isTutorialOpen: false,
     onOpenTutorial: () => {},
     onCloseTutorial: () => {},

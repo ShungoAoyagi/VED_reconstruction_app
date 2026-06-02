@@ -20,6 +20,27 @@ export const Playing = () => {
   const location = useLocation()
   const locationState = location.state as LocationState | undefined
 
+  useEffect(() => {
+    if (!locationState) {
+      navigate('/')
+    }
+  }, [locationState, navigate])
+
+  if (!locationState) return null
+
+  return <PlayingInner locationState={locationState} />
+}
+
+const PlayingInner = ({ locationState }: { locationState: LocationState }) => {
+  const navigate = useNavigate()
+
+  const { level, gameData } = locationState
+  const wfList = gameData.wave_function_property_list
+  const targetDensity = gameData.target_electron_density
+  const startTime = gameData.start_time
+  const limitSeconds = gameData.limit_seconds
+  const maxAnswerNum = gameData.max_answer_num
+
   const [waveFuncStates, setWaveFuncStates] = useState<WaveFuncState[]>([])
   const [showConfirm, setShowConfirm] = useState(false)
   const [showTimeUp, setShowTimeUp] = useState(false)
@@ -31,27 +52,14 @@ export const Playing = () => {
   const [isTutorialOpen, setIsTutorialOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [cameraState, setCameraState] = useState({
-    azimuth: Math.PI / 4, // x-y 面内 45°（x と y を均等に見せる）
-    polar: Math.PI / 4, // z 軸から 45°（z が上、x-y が面内に見える仰角）
+    azimuth: Math.PI / 4,
+    polar: Math.PI / 4,
     distance: 50
   })
 
   useEffect(() => {
-    if (!locationState) {
-      navigate('/level-select')
-      return
-    }
-    localStorage.setItem('lastPlayedLevel', locationState.level)
-  }, [locationState, navigate])
-
-  if (!locationState) return null
-
-  const { level, gameData } = locationState
-  const wfList = gameData.wave_function_property_list
-  const targetDensity = gameData.target_electron_density
-  const startTime = gameData.start_time
-  const limitSeconds = gameData.limit_seconds
-  const maxAnswerNum = gameData.max_answer_num
+    localStorage.setItem('lastPlayedLevel', level)
+  }, [level])
 
   const { remainingSeconds, isExpired } = useTimer(startTime, limitSeconds)
 
@@ -125,7 +133,7 @@ export const Playing = () => {
 
   const handleQuit = () => {
     setShowConfirm(false)
-    navigate('/level-select')
+    navigate('/')
   }
 
   const handleTimeUpAnswer = async () => {
